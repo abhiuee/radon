@@ -2,8 +2,6 @@
  * This is the Client Interface to the Radon Processing Application. It
  * presents a menu to the user, reads in any required values from the user,
  * and processes the choice that the user makes.
- *
- * @author Student Person
  */
 
 import java.util.*;
