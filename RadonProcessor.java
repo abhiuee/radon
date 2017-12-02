@@ -207,29 +207,44 @@ public class RadonProcessor
      * @param lotNumber
      * function that inserts two objects into the houseList
      */
-    private void insertInfill(int lotNumber)
+    private boolean insertInfill(int lotNumber)
     {
         int index1 = -1;
         int index2 = -1;
         for (int i = 0; i < houseList.size(); i++)
         {
-            if (houseList.get(i).getHouseNo() < lotNumber)
+            if (houseList.get(i).getHouseNo() < lotNumber && houseList.get(i).getHouseNo() < (lotNumber + 2))
             {
                 index1 = i;
             } else {
-                index2 = i;
-                break;
+                if (houseList.get(i).getHousrNo() > lotNumber && houstList.get(i).getHouseNo() > (lotNumber + 2)) {
+                    index2 = i;
+                    break;
+                }
             }
         }
+        double sumRadonLevel = 0.0;
+        int num = 0;
         double radonLevel = 0.0;
-        if ((index1 != -1) && (index2 != -1))
+        if ((index1 == -1) && (index2 == -1))
         {
-            radonLevel = radonLevel + houseList.get(index1).getDailyRead();
-            radonLevel = radonLevel + houseList.get(index2).getDailyRead();
-            radonLevel = radonLevel / 2;
+            return false;
+        } else 
+        {
+            if (index1 != -1)
+            {
+                num = num + 1;
+                sumRadonLevel = houseList.get(index1).getDailyRead(); 
+            }
+            if (index2 != -1)
+            {
+                num = num + 1;
+                sumRadonLevel += houseList.get(index2).getDailyRead();
+            }
+            radonLevel = sumRadonLevel/num;
         }
     }
-    
+
     /**
      * Function that puts infill in the houseList
      * @param lotNumber
@@ -237,16 +252,14 @@ public class RadonProcessor
     public void putInfill(int lotNumber)
     {
         // Check for available spaces with lotNumber and lotNumber + 2
-        if (!(this.searchHouseNumber(lotNumber) == -1 && 
-              this.searchHouseNumber(lotNumber+2) == -1))
-        {
+      if (!insertInfill(lotNumber))
+      {
             System.out.println("Lot is already occupied");
             return;
         }
         System.out.println("Adding infill");
-        this.insertInfill(lotNumber);                  
     }
-    
+
     /**
      * Print Remediation Report
      */
