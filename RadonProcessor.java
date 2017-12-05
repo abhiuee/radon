@@ -217,32 +217,51 @@ public class RadonProcessor
             {
                 index1 = i;
             } else {
-                if (houseList.get(i).getHousrNo() > lotNumber && houstList.get(i).getHouseNo() > (lotNumber + 2)) {
+                if (houseList.get(i).getHouseNo() > lotNumber && houseList.get(i).getHouseNo() > (lotNumber + 2)) {
                     index2 = i;
                     break;
+                } else {
+                    return false;
                 }
-            }
+            } 
         }
         double sumRadonLevel = 0.0;
+        double sumBasementVol = 0.0;
         int num = 0;
         double radonLevel = 0.0;
+        double basementVol = 0.0;
         if ((index1 == -1) && (index2 == -1))
         {
             return false;
-        } else 
+        } else
         {
             if (index1 != -1)
             {
                 num = num + 1;
                 sumRadonLevel = houseList.get(index1).getDailyRead(); 
+                sumBasementVol = houseList.get(index1).getBaseVol();
             }
             if (index2 != -1)
             {
                 num = num + 1;
                 sumRadonLevel += houseList.get(index2).getDailyRead();
+                sumBasementVol += houseList.get(index2).getBaseVol();
             }
             radonLevel = sumRadonLevel/num;
+            basementVol = sumBasementVol/num;
         }
+        House newhouse1 = new House(lotNumber, this.streetName, basementVol, radonLevel);
+        House newhouse2 = new House(lotNumber + 2, this.streetName, basementVol, radonLevel);
+        if (index2 != -1)
+        {
+            this.houseList.add(index2, newhouse2);
+            this.houseList.add(index2, newhouse1);
+        } else {
+            // Only when houses need to be added at the end of the list
+            this.houseList.add(index1+1, newhouse2);
+            this.houseList.add(index1+1, newhouse1);
+        }
+        return true;
     }
 
     /**
@@ -254,10 +273,10 @@ public class RadonProcessor
         // Check for available spaces with lotNumber and lotNumber + 2
       if (!insertInfill(lotNumber))
       {
-            System.out.println("Lot is already occupied");
+            System.out.println("Space not available for lot");
             return;
-        }
-        System.out.println("Adding infill");
+      }
+      System.out.println("Adding infill successful");
     }
 
     /**
