@@ -13,9 +13,9 @@ public class House
     /**
      * Parameterized constructor that sets values to all fields
      */
-    public House(int no, String st, double vol, double daily)
+    public House(int houseNo, String st, double vol, double daily)
     {
-        this.houseNo = no;
+        this.houseNo = houseNo;
         this.streetName = st;
         this.basementVol = vol;
         this.dailyReading = daily;
@@ -26,7 +26,8 @@ public class House
      */
     public double calcYearlyLevel()
     {
-        return this.dailyReading * this.basementVol * 365;
+        final int DAYS_IN_YEARS = 365;
+        return this.dailyReading * this.basementVol * DAYS_IN_YEARS;
     }
 
     /**
@@ -96,12 +97,16 @@ public class House
     /**
      * Print the values of all data members
      */
+    
     public String toString()
     {
-        return this.houseNo + "\t" +
-               this.streetName+ "\t" +
-               this.basementVol + "\t" +
-               this.dailyReading;
+        String dailyreading = String.format("%.04f", this.dailyReading);
+        return "House Number\t:  " + this.houseNo + "\n" +
+               "Street\t\t:  " + this.streetName+ "\n" +
+               "Basement Volume\t:  " + this.basementVol + "\n" +
+               "Daily Reading\t:  " + dailyreading + "\n" +
+               "Radon Level\t:  " + this.calcYearlyLevel();
  
     }
+    
 }

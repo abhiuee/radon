@@ -9,7 +9,7 @@ public class RadonProcessor
 {
     // instance variables
     private ArrayList<House> houseList;
-    private static final String streetName = "Rue Marie Curie";
+    private final String streetName = "Rue Marie Curie";
 
     /**
      * Null Constructor creates an empty houseList
@@ -53,13 +53,15 @@ public class RadonProcessor
     /**
      * Prints the house details for every house in houseList
      */
-    public void printHouseDetails()
+    public void printHouseDetails(int houseNumber)
     {
-        System.out.println("Printing House Details");
-        System.out.println("HouseNo\tStreetName\tBasementVol\tDailyRadonLevel\tYearlyRadonLevel");
-        for (House obj : houseList)
+        int index = this.searchHouseNumber(houseNumber);
+        if (index == -1)
         {
-            System.out.println(obj + "\t" + obj.calcYearlyLevel());
+            System.out.println("No house found");
+        } else
+        {
+            System.out.println(houseList.get(index));
         }
     }
     
@@ -72,10 +74,10 @@ public class RadonProcessor
         int index = this.searchHouseNumber(houseNumber);
         if (index == -1)
         {
-            System.out.println("House not found");    
+            System.out.println("Demolishion Error: No House Found");    
         } else
         {
-            System.out.println("Demolishing house " + houseNumber);
+            System.out.println("Removed House "+houseNumber);
             houseList.remove(index);
         }
     }
@@ -143,57 +145,46 @@ public class RadonProcessor
     public void exit(String outputFileName)
     {
         File file = new File(outputFileName);
-        FileWriter fw = null;
-        BufferedWriter bw = null;
+        PrintStream fileOut = null;
         try
         {
             if (!file.exists())
             {
                 file.createNewFile();
             }
-            fw = new FileWriter(file);
-            bw = new BufferedWriter(fw);
+            fileOut = new PrintStream(file);
             for (House obj : houseList)
             {
-                bw.write(obj.getHouseNo()+"\n");
-                bw.write(obj.getBaseVol()+"\n");
-                bw.write(obj.getDailyRead()+"\n");
-            }   
+                fileOut.println(obj.getHouseNo());
+                fileOut.println(obj.getBaseVol());
+                String dailyRead = String.format("%.05f", obj.getDailyRead());
+                fileOut.println(dailyRead);
+            }
         } catch (IOException ie)
         {
             System.out.println("IO Exception " + ie);
         } finally {
-            try
+            if (fileOut != null)
             {
-                if (bw != null)
-                {
-                    bw.close();
-                }
-                if (fw != null)
-                {
-                    fw.close();
-                }
-            } catch (IOException iex)
-            {
-                System.out.println("IO Exception " + iex);
+                fileOut.close();
             }
         }
-        System.out.println("Thank You for Using this Application!!!!");
-        System.exit(1);
     }
-    
+
     /**
      * @param Yearly radon level
      * @return String that contains remediation information
      */
     private String getRating(double radonLevel)
     {
-        if (radonLevel < 200)
+        final int SAFE = 200;
+        final int DANGER = 800;
+        if (radonLevel < SAFE)
         {
             return "Safe – no remediation required";
         } else 
         {
-            if (radonLevel < 800)
+            if (radonLevel < DANGER)
             {
                 return "Hazardous – remediation required";
             } else
@@ -207,7 +198,7 @@ public class RadonProcessor
      * @param lotNumber
      * function that inserts two objects into the houseList
      */
-    private boolean insertInfill(int lotNumber)
+    private int insertInfill(int lotNumber)
     {
         int index1 = -1;
         int index2 = -1;
@@ -221,63 +212,55 @@ public class RadonProcessor
                     index2 = i;
                     break;
                 } else {
-                    return false;
+                    if (houseList.get(i).getHouseNo() == lotNumber) {
+                        System.out.println("Error: Lot is not vacant");
+                    } else {
+                        System.out.println("Error: Not a valid house number for this block");
+                    }
+                    return -1;
                 }
             } 
         }
-        double sumRadonLevel = 0.0;
-        double sumBasementVol = 0.0;
-        int num = 0;
-        double radonLevel = 0.0;
-        double basementVol = 0.0;
-        if ((index1 == -1) && (index2 == -1))
-        {
-            return false;
-        } else
-        {
-            if (index1 != -1)
-            {
-                num = num + 1;
-                sumRadonLevel = houseList.get(index1).getDailyRead(); 
-                sumBasementVol = houseList.get(index1).getBaseVol();
-            }
-            if (index2 != -1)
-            {
-                num = num + 1;
-                sumRadonLevel += houseList.get(index2).getDailyRead();
-                sumBasementVol += houseList.get(index2).getBaseVol();
-            }
-            radonLevel = sumRadonLevel/num;
-            basementVol = sumBasementVol/num;
-        }
-        House newhouse1 = new House(lotNumber, this.streetName, basementVol, radonLevel);
-        House newhouse2 = new House(lotNumber + 2, this.streetName, basementVol, radonLevel);
-        if (index2 != -1)
-        {
-            this.houseList.add(index2, newhouse2);
-            this.houseList.add(index2, newhouse1);
-        } else {
-            // Only when houses need to be added at the end of the list
-            this.houseList.add(index1+1, newhouse2);
-            this.houseList.add(index1+1, newhouse1);
-        }
-        return true;
-    }
+        if (index2 != -1) {
+            return index2;
+        } 
 
+        return index1 + 1;
+    }
+    
     /**
      * Function that puts infill in the houseList
      * @param lotNumber
      */
-    public void putInfill(int lotNumber)
+    public void putInfill(int lotNumber, Scanner input)
     {
+        int index = insertInfill(lotNumber);
         // Check for available spaces with lotNumber and lotNumber + 2
-      if (!insertInfill(lotNumber))
-      {
-            System.out.println("Space not available for lot");
+        if (index == -1)
+        {
             return;
-      }
-      System.out.println("Adding infill successful");
-    }
+        } 
+        System.out.println("Enter basement volume for house1");
+        String base1 = input.nextLine();
+        System.out.println("Enter basement volume for house2");
+        String base2 = input.nextLine();
+        double radonLevel;
+        if (index == 0)
+        {
+            radonLevel = houseList.get(index).getDailyRead();
+
+        } else {
+            if (index == houseList.size()) {
+                radonLevel = houseList.get(index - 1).getDailyRead();
+            } else {
+                radonLevel = (houseList.get(index).getDailyRead() + houseList.get(index-1).getDailyRead())/2;
+            }
+        }
+        House newhouse1 = new House(lotNumber, this.streetName, Double.parseDouble(base1), radonLevel);
+        House newhouse2 = new House(lotNumber + 2, this.streetName, Double.parseDouble(base2), radonLevel);
+        this.houseList.add(index, newhouse2);
+        this.houseList.add(index, newhouse1);
+     }
 
     /**
      * Print Remediation Report
@@ -289,8 +272,9 @@ public class RadonProcessor
         for (House obj : houseList)
         {
             double yearlyLevel = obj.calcYearlyLevel();
+            String yearlyLevelString = String.format("%.04f", yearlyLevel);
             System.out.println(obj.getHouseNo() + "  " + obj.getStreet() +
-                               "\t" + yearlyLevel + "\t" + this.getRating(yearlyLevel));
+                               "\t" + yearlyLevelString + "\t" + this.getRating(yearlyLevel));
         }
     }
 }

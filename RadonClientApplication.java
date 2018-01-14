@@ -11,6 +11,12 @@ public class RadonClientApplication
 
     public void run()
     {
+        final int PRINT_BLOCK_DATA = 1;
+        final int PRINT_HOUSE_DETAILS = 2;
+        final int DEMOLISH = 3;
+        final int INFILL = 4;
+        final int PRINT_REPORT = 5;
+        final int EXIT = 6;
         Scanner input = new Scanner(System.in);
         RadonProcessor rp = new RadonProcessor();
         System.out.println("Welcome to the Radon Level Analysis Application");
@@ -21,52 +27,48 @@ public class RadonClientApplication
             System.out.println("Error in loading data from file " + fileName);
             return;
         }
-        while (true)
+        boolean quit = false;
+        while (!quit)
         {
             this.showMenu();
             int selection = input.nextInt();
             input.nextLine();
             switch (selection) {
-                case 1:
+                case PRINT_BLOCK_DATA:
                     rp.printBlockData();
                     break;
-                case 2:
-                    rp.printHouseDetails();
-                    break;
-                case 3:
-                    System.out.println("Enter the house number to be demolished:");
+                case PRINT_HOUSE_DETAILS:
+                    System.out.println("Enter the house number to be printed:");
                     int houseNumber = input.nextInt();
+                    input.nextLine();
+                    rp.printHouseDetails(houseNumber);
+                    break;
+                case DEMOLISH:
+                    System.out.println("Enter the house number to be demolished:");
+                    houseNumber = input.nextInt();
                     input.nextLine();
                     rp.demolishHouse(houseNumber);
                     break;
-                case 4:
+                case INFILL:
                     System.out.println("Enter the lot to create an infill:");
                     int lotNumber = input.nextInt();
                     input.nextLine();
-                    rp.putInfill(lotNumber);
+                    rp.putInfill(lotNumber,input);
                     break;
-                case 5:
+                case PRINT_REPORT:
                     rp.printReport();
                     break;
-                case 6:
+                case EXIT:
                     System.out.println("Enter the output file name:");
                     String outputFileName = input.nextLine();
                     rp.exit(outputFileName);
+                    quit = true;
                     break;
                 default:
-                    System.out.println("Invalid selection");
+                    System.out.println("Illegal Choice: Please try again");
                     break;
             }
         }
-        
-
-        // Request any additional details about the choice.
-
-        // Process the user's choice by calling on RadonProcessor.
-
-        // Write the data to the files when done processing.
-
-        // Generate a witty and/or sarcastic message when the user stops the program.
     }
 
 
